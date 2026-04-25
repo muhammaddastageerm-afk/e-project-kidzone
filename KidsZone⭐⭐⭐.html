@@ -1,0 +1,2351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KidZone 🌟 Learn & Play</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <style>
+    :root {
+      --pink:    #FF6B9D;
+      --yellow:  #FFD93D;
+      --blue:    #4FC3F7;
+      --green:   #69F0AE;
+      --purple:  #CE93D8;
+      --orange:  #FFAB40;
+      --red:     #FF6B6B;
+      --teal:    #26C6DA;
+      --bg:      #FFFDE7;
+      --dark:    #1A0533;
+      --card-r:  18px;
+      --shadow:  0 8px 30px rgba(0,0,0,.15);
+      --font-h:  'Fredoka One', cursive;
+      --font-b:  'Nunito', sans-serif;
+      --sidebar-w: 240px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-b);
+      background: var(--bg);
+      color: var(--dark);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== VOICEOVER INDICATOR ===== */
+    #voice-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      color: #fff;
+      border-radius: 50px;
+      padding: 10px 18px;
+      font-family: var(--font-h);
+      font-size: .85rem;
+      z-index: 9998;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.25);
+      animation: slideUp .3s ease;
+    }
+    #voice-indicator.show { display: flex; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .voice-waves { display:flex; align-items:flex-end; gap:2px; height:18px; }
+    .voice-wave {
+      width: 3px;
+      background: #fff;
+      border-radius: 3px;
+      animation: waveBounce .6s ease-in-out infinite;
+    }
+    .voice-wave:nth-child(1){ height:4px;  animation-delay:0s; }
+    .voice-wave:nth-child(2){ height:10px; animation-delay:.1s; }
+    .voice-wave:nth-child(3){ height:16px; animation-delay:.2s; }
+    .voice-wave:nth-child(4){ height:10px; animation-delay:.3s; }
+    .voice-wave:nth-child(5){ height:4px;  animation-delay:.4s; }
+    @keyframes waveBounce {
+      0%,100%{ transform:scaleY(1); }
+      50%{ transform:scaleY(1.8); }
+    }
+
+    /* ===== SIDEBAR NAV ===== */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: linear-gradient(180deg, #1A0533 0%, #2D1B69 50%, #1A0533 100%);
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 20px rgba(0,0,0,.4);
+      transition: transform .3s ease;
+    }
+    #sidebar .logo {
+      padding: 24px 16px;
+      text-align: center;
+      border-bottom: 2px dashed rgba(255,255,255,.2);
+    }
+    #sidebar .logo h1 {
+      font-family: var(--font-h);
+      font-size: 2.2rem;
+      background: linear-gradient(135deg, var(--yellow), var(--pink), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: logoGlow 3s ease-in-out infinite;
+    }
+    @keyframes logoGlow {
+      0%,100% { filter: drop-shadow(0 0 8px var(--yellow)); }
+      50%      { filter: drop-shadow(0 0 16px var(--pink)); }
+    }
+    #sidebar .logo p { color: rgba(255,255,255,.6); font-size:.78rem; margin-top:4px; }
+    #sidebar nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+    #sidebar nav::-webkit-scrollbar { width: 4px; }
+    #sidebar nav::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 4px; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      color: rgba(255,255,255,.78);
+      cursor: pointer;
+      font-size: .88rem;
+      font-weight: 700;
+      border-left: 3px solid transparent;
+      transition: all .25s ease;
+      text-decoration: none;
+    }
+    .nav-item:hover, .nav-item.active {
+      color: #fff;
+      border-left-color: var(--yellow);
+      background: rgba(255,255,255,.08);
+    }
+    .nav-item .icon { font-size: 1.3rem; min-width:26px; text-align:center; }
+    .nav-section-label {
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,.35);
+      padding: 16px 20px 4px;
+    }
+    /* Voice toggle button in sidebar */
+    .voice-toggle-btn {
+      margin: 12px 16px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border: none;
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px;
+      font-family: var(--font-h);
+      font-size: .85rem;
+      cursor: pointer;
+      width: calc(100% - 32px);
+      transition: all .25s;
+    }
+    .voice-toggle-btn:hover { transform: scale(1.04); }
+
+    /* ===== MAIN CONTENT ===== */
+    #main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== TOP BAR ===== */
+    #topbar {
+      background: linear-gradient(90deg, var(--pink), var(--purple), var(--blue));
+      padding: 10px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 900;
+      box-shadow: var(--shadow);
+    }
+    #topbar h2 { font-family: var(--font-h); color:#fff; font-size:1.4rem; }
+    .stars-bar { display:flex; gap:6px; flex-wrap:wrap; }
+    .star-badge {
+      background: rgba(255,255,255,.25);
+      color: #fff;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: .78rem;
+      font-weight: 800;
+    }
+    #hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
+
+    /* ===== PAGES ===== */
+    .page { display: none; padding: 30px 28px 0; animation: fadeIn .4s ease; min-height: 67vh; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ===== SECTION TITLE ===== */
+    .section-title {
+      font-family: var(--font-h);
+      font-size: 2.4rem;
+      text-align: center;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-sub {
+      text-align: center;
+      color: #888;
+      font-size: .95rem;
+      margin-bottom: 30px;
+    }
+
+    /* ===== CARD GRID ===== */
+    .card-grid { display: grid; gap: 18px; }
+    .card-grid-2 { grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); }
+    .card-grid-3 { grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); }
+    .card-grid-4 { grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); }
+    .card {
+      background: #fff;
+      border-radius: var(--card-r);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .25s ease, box-shadow .25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity .3s;
+      background: linear-gradient(135deg, rgba(255,107,157,.12), rgba(78,195,247,.12));
+    }
+    .card:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 16px 40px rgba(0,0,0,.2); }
+    .card:hover::before { opacity: 1; }
+    .card .emoji { font-size: 2.8rem; margin-bottom: 8px; display: block; }
+    .card h3 { font-family: var(--font-h); font-size: 1.1rem; color: var(--dark); }
+    .card p { font-size: .8rem; color: #888; margin-top: 4px; }
+    .card-pink   { border-top: 4px solid var(--pink);   }
+    .card-blue   { border-top: 4px solid var(--blue);   }
+    .card-green  { border-top: 4px solid var(--green);  }
+    .card-yellow { border-top: 4px solid var(--yellow); }
+    .card-purple { border-top: 4px solid var(--purple); }
+    .card-orange { border-top: 4px solid var(--orange); }
+    .card-teal   { border-top: 4px solid var(--teal);   }
+    .card-red    { border-top: 4px solid var(--red);    }
+
+    /* ===== ALPHABET ===== */
+    .alpha-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px,1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .alpha-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 16px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+      border: 2px solid transparent;
+    }
+    .alpha-card:hover {
+      transform: scale(1.15) rotate(-3deg);
+      border-color: var(--pink);
+      box-shadow: 0 12px 30px rgba(255,107,157,.35);
+    }
+    .alpha-card .big-letter {
+      font-family: var(--font-h);
+      font-size: 2.4rem;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .alpha-card .small-letter { font-size:1.2rem; color:#aaa; }
+    .alpha-card .alpha-emoji { font-size:1.4rem; }
+    .alpha-card .alpha-word { font-size:.7rem; color:#666; font-weight:700; margin-top:3px; }
+
+    /* ===== LETTER MODAL ===== */
+    #letter-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26,5,51,.75);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    #letter-modal.open { display: flex; }
+    .letter-modal-box {
+      background: #fff;
+      border-radius: 28px;
+      padding: 40px;
+      max-width: 440px;
+      width: 92%;
+      text-align: center;
+      position: relative;
+      animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:scale(1)} }
+    .modal-big-letter {
+      font-family: var(--font-h);
+      font-size: 8rem;
+      background: linear-gradient(135deg, var(--pink), var(--purple), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: letterBounce 1s infinite alternate;
+    }
+    @keyframes letterBounce { from{transform:translateY(0)} to{transform:translateY(-12px)} }
+    .modal-word { font-family:var(--font-h); font-size:2rem; color:var(--dark); margin:8px 0; }
+    .modal-emoji { font-size:4rem; }
+    .modal-sentence { color:#666; font-size:1rem; margin-top:8px; }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 18px;
+      background: var(--pink);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 34px; height: 34px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform .2s;
+    }
+    .modal-close:hover { transform: rotate(90deg) scale(1.2); }
+    .trace-bar { display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+    .trace-dot {
+      width:12px; height:12px;
+      border-radius:50%;
+      animation: tracePulse 1.2s infinite;
+    }
+    @keyframes tracePulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.4} }
+
+    /* ===== DAYS ===== */
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+      gap: 20px;
+    }
+    .day-card {
+      border-radius: 20px;
+      padding: 24px 16px;
+      text-align: center;
+      color: #fff;
+      box-shadow: var(--shadow);
+      transition: transform .3s ease, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .day-card::after {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 90px; height: 90px;
+      background: rgba(255,255,255,.12);
+      border-radius: 50%;
+    }
+    .day-card:hover { transform: translateY(-8px) rotate(1.5deg); box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+    .day-card .day-emoji { font-size:3rem; }
+    .day-card h3 { font-family:var(--font-h); font-size:1.5rem; margin:8px 0 4px; }
+    .day-card p { font-size:.82rem; opacity:.88; }
+    .day-card .day-num {
+      position: absolute;
+      top: 10px; left: 14px;
+      font-family: var(--font-h);
+      font-size: 1rem;
+      opacity: .5;
+    }
+
+    /* ===== ANIMALS / VEG / FRUITS ===== */
+    .category-block { margin-bottom: 48px; }
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px dashed;
+    }
+    .category-header h2 { font-family: var(--font-h); font-size: 1.8rem; }
+    .category-header .cat-icon { font-size: 2rem; }
+    .item-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.1);
+      transition: all .25s ease;
+      cursor: pointer;
+    }
+    .item-card:hover { transform: scale(1.08); box-shadow: 0 10px 28px rgba(0,0,0,.18); }
+    .item-card .em { font-size: 2.4rem; }
+    .item-card span { display:block; font-weight:800; font-size:.85rem; margin-top:5px; }
+    .item-card small { color:#aaa; font-size:.72rem; }
+
+    /* ===== MONTHS ===== */
+    .months-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+      gap: 16px;
+    }
+    .month-card {
+      border-radius: 18px;
+      padding: 22px 14px;
+      text-align: center;
+      color: #fff;
+      box-shadow: var(--shadow);
+      transition: transform .3s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .month-card:hover { transform: scale(1.06) rotate(-1deg); }
+    .month-card .m-num { font-size:.75rem; opacity:.6; font-weight:800; }
+    .month-card .m-emoji { font-size:2.4rem; margin:6px 0; }
+    .month-card h3 { font-family:var(--font-h); font-size:1.3rem; }
+    .month-card p { font-size:.75rem; opacity:.85; margin-top:4px; }
+    .seasons-strip {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 16px;
+      margin-top: 36px;
+    }
+    .season-card {
+      border-radius: 20px;
+      padding: 28px 16px;
+      text-align: center;
+      color: #fff;
+      box-shadow: var(--shadow);
+      transition: transform .3s ease;
+      cursor: pointer;
+    }
+    .season-card:hover { transform: translateY(-8px); }
+    .season-card .s-emoji { font-size:3.5rem; animation:floatSlow 3s ease-in-out infinite; }
+    @keyframes floatSlow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .season-card h3 { font-family:var(--font-h); font-size:1.5rem; margin:10px 0 4px; }
+    .season-card p { font-size:.8rem; opacity:.88; }
+
+    /* ===== BODY PARTS ===== */
+    .body-parts-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+    .body-figure {
+      background: linear-gradient(135deg,#667eea,#764ba2);
+      border-radius: 24px;
+      padding: 30px;
+      text-align: center;
+      color: #fff;
+      font-size: 8rem;
+      line-height: 1;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 80px;
+    }
+    .body-parts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
+      gap: 14px;
+    }
+    .bp-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,.1);
+      transition: all .25s ease;
+      cursor: pointer;
+    }
+    .bp-card:hover { transform: scale(1.1); box-shadow: 0 10px 30px rgba(255,107,157,.3); }
+    .bp-card .bp-emoji { font-size: 2.2rem; }
+    .bp-card span { display:block; font-weight:800; font-size:.9rem; margin-top:5px; color:var(--dark); }
+    .bp-card small { font-size:.72rem; color:#aaa; }
+
+    /* ===== COUNTING ===== */
+    .count-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 10px;
+    }
+    .count-num {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 6px;
+      text-align: center;
+      font-family: var(--font-h);
+      font-size: 1.2rem;
+      box-shadow: 0 3px 12px rgba(0,0,0,.1);
+      cursor: pointer;
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+    }
+    .count-num:hover {
+      transform: scale(1.3) rotate(-5deg);
+      z-index: 10;
+      box-shadow: 0 10px 28px rgba(0,0,0,.2);
+    }
+    .count-num .emoji-pop {
+      display: none;
+      position: absolute;
+      top:-28px; left:50%;
+      transform:translateX(-50%);
+      font-size:1.4rem;
+      animation: popUp .4s ease;
+    }
+    @keyframes popUp { from{opacity:0;transform:translateX(-50%) scale(0)} to{opacity:1;transform:translateX(-50%) scale(1)} }
+    .count-num:hover .emoji-pop { display:block; }
+    .count-num[data-n="10"],.count-num[data-n="20"],.count-num[data-n="30"],
+    .count-num[data-n="40"],.count-num[data-n="50"],.count-num[data-n="60"],
+    .count-num[data-n="70"],.count-num[data-n="80"],.count-num[data-n="90"],
+    .count-num[data-n="100"] {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff;
+    }
+
+    /* ===== MATH ===== */
+    .math-section {
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+    .math-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .op-icon { font-size: 2.4rem; }
+    .math-header h2 { font-family: var(--font-h); font-size: 1.8rem; color: var(--dark); }
+    .math-concept {
+      background: linear-gradient(135deg, rgba(206,147,216,.15), rgba(79,195,247,.15));
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .math-concept p { font-size: .9rem; color: #555; margin-bottom: 8px; }
+    .formula { font-family: var(--font-h); font-size: 1.1rem; color: var(--purple); }
+    .questions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px,1fr));
+      gap: 12px;
+    }
+    .q-card {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .3s ease;
+      border: 2px solid transparent;
+    }
+    .q-card:hover { border-color: var(--purple); transform: scale(1.05); }
+    .q-card .question { font-family: var(--font-h); font-size: 1.2rem; color: var(--dark); }
+    .q-card .answer { display: none; font-family: var(--font-h); font-size: 1.4rem; color: var(--green); margin-top: 6px; }
+    .q-card:hover .answer { display: block; }
+    .q-card small { font-size: .65rem; color: #aaa; }
+
+    /* ===== SHAPES ===== */
+    .shapes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+      gap: 20px;
+    }
+    .shape-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 24px 16px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: all .3s ease;
+      cursor: pointer;
+    }
+    .shape-card:hover { transform: translateY(-8px) rotate(5deg); box-shadow: 0 20px 50px rgba(0,0,0,.2); }
+    .shape-svg { width: 80px; height: 80px; margin: 0 auto 12px; display: block; }
+    .shape-card h3 { font-family: var(--font-h); font-size: 1.1rem; }
+    .shape-card p { font-size: .75rem; color: #888; margin: 4px 0; }
+    .sides-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: .72rem;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+
+    /* ===== COLORS ===== */
+    .colors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+      gap: 16px;
+    }
+    .color-card {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform .3s ease;
+      cursor: pointer;
+    }
+    .color-card:hover { transform: scale(1.05); }
+    .color-swatch { height: 100px; }
+    .color-info { padding: 14px 16px; }
+    .color-info h3 { font-family: var(--font-h); font-size: 1.1rem; }
+    .color-info small { font-size: .78rem; color: #888; }
+    .color-theory {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .theory-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .color-circles { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
+    .c-circle {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .7rem;
+      font-weight: 900;
+      color: #fff;
+    }
+    .mix-arrow { font-size: 1.4rem; font-weight: 900; color: var(--dark); align-self: center; }
+
+    /* ===== TABLES ===== */
+    .tables-intro {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 20px;
+      padding: 28px;
+      color: #fff;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+    .tables-intro h2 { font-family: var(--font-h); font-size: 1.8rem; }
+    .tables-intro p { opacity: .88; margin-top: 8px; }
+    .tables-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+      gap: 20px;
+    }
+    .table-card {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .table-header {
+      color: #fff;
+      padding: 14px;
+      font-family: var(--font-h);
+      font-size: 1.3rem;
+      text-align: center;
+    }
+    .table-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: .92rem;
+      cursor: pointer;
+    }
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: #fafafa; }
+    .table-row .expr { font-weight: 700; color: var(--dark); }
+    .table-row .eq { color: #888; }
+    .table-row .result { font-family: var(--font-h); font-size: 1.1rem; }
+    .sqrt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px,1fr));
+      gap: 14px;
+      margin-top: 30px;
+    }
+    .sqrt-card {
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      color: #fff;
+      cursor: pointer;
+    }
+    .sqrt-card .sq-num { font-family: var(--font-h); font-size: 1.8rem; }
+    .sqrt-card small { font-size: .72rem; opacity: .85; }
+    .sqrt-card .result-sq { font-size: .95rem; font-weight: 800; margin-top: 4px; }
+
+    /* ===== RHYMES SECTION ===== */
+    .rhymes-filter {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .rhyme-filter-btn {
+      background: #fff;
+      border: 2px solid var(--purple);
+      color: var(--purple);
+      border-radius: 50px;
+      padding: 8px 20px;
+      font-family: var(--font-h);
+      font-size: .88rem;
+      cursor: pointer;
+      transition: all .25s;
+    }
+    .rhyme-filter-btn:hover,
+    .rhyme-filter-btn.active {
+      background: var(--purple);
+      color: #fff;
+      transform: scale(1.05);
+    }
+    .rhymes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .rhyme-card {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: transform .3s ease;
+      cursor: pointer;
+    }
+    .rhyme-card:hover { transform: translateY(-6px); }
+    .rhyme-header {
+      padding: 20px 22px 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .rhyme-header .rh-emoji { font-size: 2.4rem; }
+    .rhyme-header h3 { font-family: var(--font-h); font-size: 1.3rem; }
+    .rhyme-header small { font-size: .75rem; opacity: .85; display: block; margin-top: 2px; }
+    .rhyme-body {
+      padding: 18px 22px;
+    }
+    .rhyme-lines {
+      font-size: .92rem;
+      color: #555;
+      line-height: 1.85;
+      white-space: pre-line;
+      font-style: italic;
+      border-left: 3px solid;
+      padding-left: 14px;
+      margin-bottom: 14px;
+    }
+    .rhyme-play-btn {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-family: var(--font-h);
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all .25s;
+      margin-bottom: 10px;
+    }
+    .rhyme-play-btn:hover { transform: scale(1.06); box-shadow: 0 6px 18px rgba(255,107,157,.4); }
+
+    /* YouTube links in rhymes */
+    .youtube-links { margin-top: 10px; }
+    .youtube-links p {
+      font-size: .78rem;
+      color: #888;
+      font-weight: 800;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .yt-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #fff5f5;
+      border: 1.5px solid #ffcccc;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #c0392b;
+      font-size: .82rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      transition: all .2s;
+    }
+    .yt-link:hover {
+      background: #FF0000;
+      color: #fff;
+      border-color: #FF0000;
+      transform: translateX(4px);
+    }
+    .yt-icon { font-size: 1.1rem; flex-shrink:0; }
+
+    /* Rhymes videos section */
+    .rhymes-videos-section { margin-top: 40px; }
+    .rhymes-videos-section .section-title { font-size: 1.8rem; margin-bottom: 6px; }
+    .videos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .video-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: transform .3s ease;
+    }
+    .video-card:hover { transform: translateY(-5px); }
+    .video-thumbnail {
+      background: linear-gradient(135deg, #FF0000, #cc0000);
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .video-thumbnail::after {
+      content: '▶';
+      position: absolute;
+      background: rgba(255,255,255,.25);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: #fff;
+      right: 14px;
+      bottom: 14px;
+      line-height: 50px;
+      text-align: center;
+    }
+    .video-info { padding: 14px 16px; }
+    .video-info h4 { font-family: var(--font-h); font-size: 1rem; color: var(--dark); margin-bottom: 4px; }
+    .video-info p { font-size: .78rem; color: #888; margin-bottom: 10px; }
+    .video-watch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FF0000;
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: .82rem;
+      font-weight: 800;
+      text-decoration: none;
+      transition: all .25s;
+    }
+    .video-watch-btn:hover { background: #cc0000; transform: scale(1.05); }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: linear-gradient(180deg, #1A0533, #2D1B69);
+      color: #fff;
+      padding: 36px 40px 20px;
+      margin-top: 60px;
+    }
+    .footer-grid {
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-col { min-width: 150px; flex: 1; }
+    .footer-col h4 { font-family: var(--font-h); font-size: 1.2rem; color: var(--yellow); margin-bottom: 10px; }
+    .footer-col p, .footer-col a {
+      font-size: .85rem;
+      opacity: .75;
+      line-height: 1.8;
+      text-decoration: none;
+      color: #fff;
+      display: block;
+    }
+    .footer-col a:hover { opacity: 1; color: var(--yellow); }
+    .footer-bottom {
+      text-align: center;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.15);
+      font-size: .8rem;
+      opacity: .5;
+    }
+    .footer-hearts { color: var(--pink); }
+
+    /* ===== HOME PAGE ===== */
+    .hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 40%, #f093fb 100%);
+      border-radius: 24px;
+      padding: 50px 36px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '🌟✨⭐🌈🎉🎊🦄🌺🎈🎠';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      font-size: 3rem;
+      opacity: .12;
+      white-space: nowrap;
+      overflow: hidden;
+      letter-spacing: 20px;
+    }
+    .hero h1 { font-family: var(--font-h); font-size: 3.5rem; text-shadow: 0 4px 20px rgba(0,0,0,.3); }
+    .hero p { font-size: 1.1rem; margin-top: 10px; opacity: .9; max-width: 500px; margin-inline: auto; }
+    .hero-floating {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .hero-float-btn {
+      background: rgba(255,255,255,.25);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      border: 2px solid rgba(255,255,255,.4);
+      border-radius: 50px;
+      padding: 10px 22px;
+      font-family: var(--font-h);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all .3s ease;
+      text-decoration: none;
+    }
+    .hero-float-btn:hover { background: #fff; color: var(--purple); transform: translateY(-4px); }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+    .feature-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 24px 18px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: all .3s ease;
+      border-bottom: 4px solid transparent;
+    }
+    .feature-card:hover { transform: translateY(-8px); }
+    .feature-card .f-emoji { font-size: 2.6rem; animation: floatSlow 3s ease-in-out infinite; }
+    .feature-card h3 { font-family: var(--font-h); font-size: 1.1rem; margin-top: 10px; }
+    .feature-card p { font-size: .78rem; color: #888; margin-top: 4px; }
+    .feature-card:nth-child(2) .f-emoji { animation-delay: .4s; }
+    .feature-card:nth-child(3) .f-emoji { animation-delay: .8s; }
+    .feature-card:nth-child(4) .f-emoji { animation-delay: 1.2s; }
+    .feature-card:nth-child(5) .f-emoji { animation-delay: 1.6s; }
+    .feature-card:nth-child(6) .f-emoji { animation-delay: 2s; }
+
+    /* confetti canvas */
+    #confetti-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Overlay for sidebar close on mobile */
+    #sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 999;
+    }
+    #sidebar-overlay.show { display: block; }
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width: 1024px) {
+      .rhymes-grid { grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); }
+      .color-theory { grid-template-columns: 1fr; }
+    }
+
+    @media(max-width: 768px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      #main { margin-left: 0; }
+      #hamburger { display: block; }
+      .count-grid { grid-template-columns: repeat(5,1fr); }
+      .seasons-strip { grid-template-columns: repeat(2,1fr); }
+      .color-theory { grid-template-columns: 1fr; }
+      .body-parts-layout { grid-template-columns: 1fr; }
+      .body-figure { position: static; font-size: 5rem; padding: 20px; }
+      .hero h1 { font-size: 2.2rem; }
+      .hero { padding: 32px 20px; }
+      .page { padding: 20px 16px 0; }
+      footer { padding: 28px 20px 16px; }
+      .footer-grid { flex-direction: column; gap: 20px; }
+      .section-title { font-size: 1.8rem; }
+      .rhymes-grid { grid-template-columns: 1fr; }
+      .videos-grid { grid-template-columns: 1fr; }
+      #topbar h2 { font-size: 1rem; }
+      .stars-bar { display: none; }
+    }
+
+    @media(max-width: 480px) {
+      .alpha-grid { grid-template-columns: repeat(auto-fill, minmax(70px,1fr)); gap: 8px; }
+      .days-grid { grid-template-columns: 1fr; }
+      .months-grid { grid-template-columns: repeat(2,1fr); }
+      .seasons-strip { grid-template-columns: repeat(2,1fr); }
+      .count-grid { grid-template-columns: repeat(5,1fr); gap: 5px; }
+      .count-num { font-size: .95rem; padding: 8px 4px; }
+      .tables-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: repeat(2,1fr); }
+      .hero h1 { font-size: 1.8rem; }
+      .colors-grid { grid-template-columns: repeat(2,1fr); }
+    }
+
+    @media(min-width: 1400px) {
+      :root { --sidebar-w: 260px; }
+      .hero h1 { font-size: 4rem; }
+      .rhymes-grid { grid-template-columns: repeat(3,1fr); }
+      .videos-grid { grid-template-columns: repeat(4,1fr); }
+    }
+
+    /* Utility */
+    .mt-4 { margin-top: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+    .text-center { text-align: center; }
+    .divider { height: 2px; background: linear-gradient(90deg,transparent,var(--pink),transparent); margin: 30px 0; border: none; }
+    .badge {
+      display: inline-block;
+      background: var(--yellow);
+      color: var(--dark);
+      font-weight: 800;
+      font-size: .72rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%,100%{box-shadow:0 0 0 0 rgba(255,107,157,.5)}
+      50%{box-shadow:0 0 0 14px rgba(255,107,157,0)}
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<!-- Sidebar overlay for mobile -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- Voice indicator -->
+<div id="voice-indicator">
+  <div class="voice-waves">
+    <div class="voice-wave"></div>
+    <div class="voice-wave"></div>
+    <div class="voice-wave"></div>
+    <div class="voice-wave"></div>
+    <div class="voice-wave"></div>
+  </div>
+  <span id="voice-text">Speaking...</span>
+</div>
+
+<!-- ============ SIDEBAR ============ -->
+<aside id="sidebar">
+  <div class="logo">
+    <h1>🌟 KidZone</h1>
+    <p>Learn. Play. Grow!</p>
+  </div>
+  <nav>
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item active" data-page="home" onclick="showPage('home')">
+      <span class="icon">🏠</span> Home
+    </a>
+
+    <div class="nav-section-label">Language</div>
+    <a class="nav-item" data-page="alphabet" onclick="showPage('alphabet')">
+      <span class="icon">🔤</span> Alphabet A–Z
+    </a>
+    <a class="nav-item" data-page="rhymes" onclick="showPage('rhymes')">
+      <span class="icon">🎵</span> Rhymes
+    </a>
+
+    <div class="nav-section-label">Time & Nature</div>
+    <a class="nav-item" data-page="days" onclick="showPage('days')">
+      <span class="icon">📅</span> Days of Week
+    </a>
+    <a class="nav-item" data-page="months" onclick="showPage('months')">
+      <span class="icon">🗓️</span> Months & Seasons
+    </a>
+
+    <div class="nav-section-label">Living World</div>
+    <a class="nav-item" data-page="nature" onclick="showPage('nature')">
+      <span class="icon">🌿</span> Animals, Vegs & Fruits
+    </a>
+    <a class="nav-item" data-page="bodyparts" onclick="showPage('bodyparts')">
+      <span class="icon">🧠</span> Body Parts
+    </a>
+
+    <div class="nav-section-label">Numbers & Math</div>
+    <a class="nav-item" data-page="counting" onclick="showPage('counting')">
+      <span class="icon">🔢</span> Counting 1–100
+    </a>
+    <a class="nav-item" data-page="math" onclick="showPage('math')">
+      <span class="icon">➕</span> Math Operations
+    </a>
+    <a class="nav-item" data-page="tables" onclick="showPage('tables')">
+      <span class="icon">📊</span> Tables & Roots
+    </a>
+
+    <div class="nav-section-label">Art & Design</div>
+    <a class="nav-item" data-page="shapes" onclick="showPage('shapes')">
+      <span class="icon">🔷</span> Shapes
+    </a>
+    <a class="nav-item" data-page="colors" onclick="showPage('colors')">
+      <span class="icon">🎨</span> Colors
+    </a>
+
+    <div style="padding: 12px 0 4px;">
+      <button class="voice-toggle-btn" onclick="toggleVoice()">
+        🔊 <span id="voice-btn-text">Voice ON</span>
+      </button>
+    </div>
+  </nav>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<div id="main">
+  <!-- Topbar -->
+  <div id="topbar">
+    <button id="hamburger" onclick="toggleSidebar()">☰</button>
+    <h2 id="topbar-title">🏠 Welcome to KidZone!</h2>
+    <div class="stars-bar">
+      <span class="star-badge">⭐ Explorer</span>
+      <span class="star-badge">🎓 KidZone</span>
+    </div>
+  </div>
+
+  <!-- ======= HOME PAGE ======= -->
+  <section class="page active" id="page-home">
+    <div class="hero">
+      <h1>Welcome to KidZone! 🌈</h1>
+      <p>The most fun place to learn letters, numbers, animals, and so much more! Every day is a new adventure! 🚀</p>
+      <div class="hero-floating">
+        <a class="hero-float-btn" onclick="showPage('alphabet')">🔤 Alphabets</a>
+        <a class="hero-float-btn" onclick="showPage('rhymes')">🎵 Rhymes</a>
+        <a class="hero-float-btn" onclick="showPage('math')">➕ Math Fun</a>
+        <a class="hero-float-btn" onclick="showPage('nature')">🦁 Animals</a>
+        <a class="hero-float-btn" onclick="showPage('colors')">🎨 Colors</a>
+      </div>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card" style="border-bottom-color:var(--pink)" onclick="showPage('alphabet')">
+        <div class="f-emoji">🔤</div>
+        <h3>A–Z Alphabet</h3>
+        <p>Click any letter for a super fun animation!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--purple)" onclick="showPage('rhymes')">
+        <div class="f-emoji">🎵</div>
+        <h3>Rhymes</h3>
+        <p>Fun English rhymes with YouTube songs!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--blue)" onclick="showPage('days')">
+        <div class="f-emoji">📅</div>
+        <h3>Days of Week</h3>
+        <p>Monday to Sunday with fun facts!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--green)" onclick="showPage('nature')">
+        <div class="f-emoji">🦁</div>
+        <h3>Animals & Food</h3>
+        <p>Animals, vegetables & fruits!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--yellow)" onclick="showPage('months')">
+        <div class="f-emoji">🗓️</div>
+        <h3>Months & Seasons</h3>
+        <p>All 12 months + 4 seasons!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--purple)" onclick="showPage('bodyparts')">
+        <div class="f-emoji">🧠</div>
+        <h3>Body Parts</h3>
+        <p>Learn every part of the body!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--orange)" onclick="showPage('counting')">
+        <div class="f-emoji">🔢</div>
+        <h3>1 to 100</h3>
+        <p>Count from 1 to 100 with fun!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--red)" onclick="showPage('math')">
+        <div class="f-emoji">➕</div>
+        <h3>Math Fun</h3>
+        <p>Add, subtract, multiply, divide!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--teal)" onclick="showPage('shapes')">
+        <div class="f-emoji">🔷</div>
+        <h3>Shapes</h3>
+        <p>Circles, squares, triangles & more!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--pink)" onclick="showPage('colors')">
+        <div class="f-emoji">🎨</div>
+        <h3>Colors</h3>
+        <p>Primary & secondary color magic!</p>
+      </div>
+      <div class="feature-card" style="border-bottom-color:var(--purple)" onclick="showPage('tables')">
+        <div class="f-emoji">📊</div>
+        <h3>Tables 1–5</h3>
+        <p>Multiplication tables + square roots!</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:2.5rem;letter-spacing:10px;margin:10px 0 40px;animation:floatSlow 3s ease-in-out infinite;">
+      🎈🌈🦋🌸🎉🦄⭐🎊🌟
+    </div>
+  </section>
+
+  <!-- ======= ALPHABET PAGE ======= -->
+  <section class="page" id="page-alphabet">
+    <div class="section-title">A B C … The Alphabet! 🔤</div>
+    <p class="section-sub">Click any letter to hear it spoken and discover its word! ✨</p>
+    <div class="alpha-grid" id="alpha-grid"></div>
+  </section>
+
+  <!-- ======= RHYMES PAGE ======= -->
+  <section class="page" id="page-rhymes">
+    <div class="section-title">Fun English Rhymes! 🎵</div>
+    <p class="section-sub">Click a rhyme card to hear it! Watch the YouTube videos too! 🎶</p>
+
+    <div class="rhymes-filter" id="rhymes-filter">
+      <button class="rhyme-filter-btn active" onclick="filterRhymes('all', this)">🌟 All Rhymes</button>
+      <button class="rhyme-filter-btn" onclick="filterRhymes('classic', this)">📖 Classic</button>
+      <button class="rhyme-filter-btn" onclick="filterRhymes('animals', this)">🐾 Animals</button>
+      <button class="rhyme-filter-btn" onclick="filterRhymes('learning', this)">🎓 Learning</button>
+      <button class="rhyme-filter-btn" onclick="filterRhymes('bedtime', this)">🌙 Bedtime</button>
+    </div>
+
+    <div class="rhymes-grid" id="rhymes-grid"></div>
+
+    <hr class="divider">
+
+    <!-- YouTube Videos Section -->
+    <div class="rhymes-videos-section">
+      <div class="section-title" style="font-size:1.8rem;">🎬 Watch & Sing Along!</div>
+      <p class="section-sub">Click any video to open it on YouTube and sing along! 🎤</p>
+      <div class="videos-grid" id="videos-grid"></div>
+    </div>
+  </section>
+
+  <!-- ======= DAYS PAGE ======= -->
+  <section class="page" id="page-days">
+    <div class="section-title">Days of the Week 📅</div>
+    <p class="section-sub">There are 7 days in a week — click to hear them! 🌞</p>
+    <div class="days-grid" id="days-grid"></div>
+  </section>
+
+  <!-- ======= NATURE PAGE ======= -->
+  <section class="page" id="page-nature">
+    <div class="section-title">Animals, Vegetables & Fruits 🌿</div>
+    <p class="section-sub">Click any card to hear its name! 🌍</p>
+    <div class="category-block">
+      <div class="category-header" style="border-color:var(--orange)">
+        <span class="cat-icon">🦁</span>
+        <h2 style="color:var(--orange)">Animals</h2>
+      </div>
+      <div class="card-grid card-grid-4" id="animals-grid"></div>
+    </div>
+    <hr class="divider">
+    <div class="category-block">
+      <div class="category-header" style="border-color:var(--green)">
+        <span class="cat-icon">🥦</span>
+        <h2 style="color:var(--green)">Vegetables</h2>
+      </div>
+      <div class="card-grid card-grid-4" id="vegs-grid"></div>
+    </div>
+    <hr class="divider">
+    <div class="category-block">
+      <div class="category-header" style="border-color:var(--pink)">
+        <span class="cat-icon">🍎</span>
+        <h2 style="color:var(--pink)">Fruits</h2>
+      </div>
+      <div class="card-grid card-grid-4" id="fruits-grid"></div>
+    </div>
+  </section>
+
+  <!-- ======= MONTHS & SEASONS ======= -->
+  <section class="page" id="page-months">
+    <div class="section-title">Months & Seasons 🗓️</div>
+    <p class="section-sub">12 months and 4 beautiful seasons! Click to hear! 🌸❄️☀️🍂</p>
+    <div class="months-grid" id="months-grid"></div>
+    <hr class="divider">
+    <div class="section-title" style="font-size:1.8rem;margin-top:10px;">The Four Seasons 🌍</div>
+    <p class="section-sub">Each season brings something special!</p>
+    <div class="seasons-strip" id="seasons-strip"></div>
+  </section>
+
+  <!-- ======= BODY PARTS ======= -->
+  <section class="page" id="page-bodyparts">
+    <div class="section-title">Body Parts 🧠</div>
+    <p class="section-sub">Click any body part to hear its name! 💪</p>
+    <div class="body-parts-layout">
+      <div class="body-figure">
+        🧑<br>
+        <div style="font-family:var(--font-h);font-size:1rem;margin-top:10px;opacity:.85">The Human Body</div>
+      </div>
+      <div class="body-parts-grid" id="bodyparts-grid"></div>
+    </div>
+  </section>
+
+  <!-- ======= COUNTING ======= -->
+  <section class="page" id="page-counting">
+    <div class="section-title">Counting 1 to 100 🔢</div>
+    <p class="section-sub">Click any number to hear it! Hover for fun emoji! 🎉</p>
+    <div class="count-grid" id="count-grid"></div>
+  </section>
+
+  <!-- ======= MATH ======= -->
+  <section class="page" id="page-math">
+    <div class="section-title">Math Fun! ➕➖✖️➗</div>
+    <p class="section-sub">Click on any question card to reveal and hear the answer! 🤓</p>
+    <div id="math-sections"></div>
+  </section>
+
+  <!-- ======= SHAPES ======= -->
+  <section class="page" id="page-shapes">
+    <div class="section-title">Shapes All Around! 🔷</div>
+    <p class="section-sub">Click any shape to hear its name! 🌍</p>
+    <div class="shapes-grid" id="shapes-grid"></div>
+  </section>
+
+  <!-- ======= COLORS ======= -->
+  <section class="page" id="page-colors">
+    <div class="section-title">World of Colors 🎨</div>
+    <p class="section-sub">Click any color to hear its name! 🌈</p>
+    <div class="colors-grid" id="colors-grid"></div>
+    <hr class="divider">
+    <div class="section-title" style="font-size:1.8rem;">Color Theory 🖌️</div>
+    <div class="color-theory">
+      <div class="theory-box">
+        <h3 style="color:var(--blue)">🔵 Primary Colors</h3>
+        <p style="font-size:.85rem;color:#666;margin-bottom:14px">Primary colors are the building blocks. They CANNOT be made by mixing other colors!</p>
+        <div class="color-circles">
+          <div class="c-circle" style="background:#FF0000">RED</div>
+          <div class="c-circle" style="background:#0000FF">BLUE</div>
+          <div class="c-circle" style="background:#FFFF00;color:#555">YELLOW</div>
+        </div>
+      </div>
+      <div class="theory-box">
+        <h3 style="color:var(--orange)">🟠 Secondary Colors</h3>
+        <p style="font-size:.85rem;color:#666;margin-bottom:14px">Mix two primary colors to get a secondary color! Magic! ✨</p>
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">
+          <div class="c-circle" style="background:#FF0000;width:44px;height:44px;font-size:.6rem">RED</div>
+          <span class="mix-arrow">+</span>
+          <div class="c-circle" style="background:#0000FF;width:44px;height:44px;font-size:.6rem">BLUE</div>
+          <span class="mix-arrow">=</span>
+          <div class="c-circle" style="background:#800080;width:52px;height:52px">PURPLE</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:10px">
+          <div class="c-circle" style="background:#FF0000;width:44px;height:44px;font-size:.6rem">RED</div>
+          <span class="mix-arrow">+</span>
+          <div class="c-circle" style="background:#FFFF00;color:#555;width:44px;height:44px;font-size:.6rem">YELLOW</div>
+          <span class="mix-arrow">=</span>
+          <div class="c-circle" style="background:#FFA500;width:52px;height:52px;font-size:.62rem">ORANGE</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:10px">
+          <div class="c-circle" style="background:#0000FF;width:44px;height:44px;font-size:.6rem">BLUE</div>
+          <span class="mix-arrow">+</span>
+          <div class="c-circle" style="background:#FFFF00;color:#555;width:44px;height:44px;font-size:.6rem">YELLOW</div>
+          <span class="mix-arrow">=</span>
+          <div class="c-circle" style="background:#008000;width:52px;height:52px">GREEN</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= TABLES ======= -->
+  <section class="page" id="page-tables">
+    <div class="tables-intro">
+      <h2>📊 Multiplication Tables 1–5</h2>
+      <p>Click any row to hear it! Memorize these and you'll be a Math Champion! 🏆</p>
+      <div style="margin-top:12px;font-size:.9rem;opacity:.85">
+        Method: <strong>Number × Position = Result</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
+        Example: <strong>3 × 4 = 12</strong> means "3 groups of 4"
+      </div>
+    </div>
+    <div class="tables-grid" id="tables-grid"></div>
+    <hr class="divider">
+    <div class="section-title" style="font-size:1.8rem;">Square Roots 1–10 √</div>
+    <p class="section-sub">The square root of a number is what you multiply by itself to get that number! √9 = 3 because 3×3=9</p>
+    <div class="sqrt-grid" id="sqrt-grid"></div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>🌟 KidZone</h4>
+        <p>A fun & interactive learning platform built for toddlers and young learners. Making education magical! ✨</p>
+      </div>
+      <div class="footer-col">
+        <h4>📚 Quick Links</h4>
+        <a onclick="showPage('alphabet')" style="cursor:pointer">🔤 Alphabet A–Z</a>
+        <a onclick="showPage('rhymes')" style="cursor:pointer">🎵 Rhymes</a>
+        <a onclick="showPage('math')" style="cursor:pointer">➕ Math Fun</a>
+        <a onclick="showPage('colors')" style="cursor:pointer">🎨 Colors</a>
+        <a onclick="showPage('shapes')" style="cursor:pointer">🔷 Shapes</a>
+      </div>
+      <div class="footer-col">
+        <h4>🎵 Rhyme Picks</h4>
+        <a onclick="showPage('rhymes')" style="cursor:pointer">🐑 Baa Baa Black Sheep</a>
+        <a onclick="showPage('rhymes')" style="cursor:pointer">⭐ Twinkle Twinkle</a>
+        <a onclick="showPage('rhymes')" style="cursor:pointer">🐛 Itsy Bitsy Spider</a>
+        <a onclick="showPage('rhymes')" style="cursor:pointer">🎵 ABC Song</a>
+      </div>
+      <div class="footer-col">
+        <h4>👤 Owner Info</h4>
+        <p>📛 Dastageer Abdul Ghafoor</p>
+        <p>📞 Contact: +92-300-0000000</p>
+        <p>📧 kidzone@learning.edu</p>
+        <p>🏫 KidZone Educational Platform</p>
+        <p style="margin-top:8px">📍 Pakistan 🇵🇰</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 KidZone — Made with <span class="footer-hearts">❤️</span> by Dastageer Abdul Ghafoor | All Rights Reserved</p>
+      <p style="margin-top:4px">Designed for children aged 2–8 years 🎈</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ======= LETTER MODAL ======= -->
+<div id="letter-modal">
+  <div class="letter-modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-big-letter" id="modal-letter">A</div>
+    <div class="modal-emoji" id="modal-emoji">🍎</div>
+    <div class="modal-word" id="modal-word">Apple</div>
+    <div class="modal-sentence" id="modal-sentence">"A is for Apple, red and sweet!"</div>
+    <div class="trace-bar" id="trace-bar"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// VOICEOVER SYSTEM
+// ============================================================
+
+var voiceEnabled = true;
+var currentUtterance = null;
+
+function speak(text) {
+  if (!voiceEnabled) return;
+  if (!window.speechSynthesis) return;
+
+  // Cancel any current speech
+  window.speechSynthesis.cancel();
+
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  currentUtterance.rate = 0.85;
+  currentUtterance.pitch = 1.2;
+  currentUtterance.volume = 1;
+  currentUtterance.lang = 'en-US';
+
+  // Show indicator
+  var indicator = document.getElementById('voice-indicator');
+  var voiceTextEl = document.getElementById('voice-text');
+  voiceTextEl.textContent = text.length > 30 ? text.substring(0, 30) + '…' : text;
+  indicator.classList.add('show');
+
+  currentUtterance.onend = function() {
+    indicator.classList.remove('show');
+  };
+  currentUtterance.onerror = function() {
+    indicator.classList.remove('show');
+  };
+
+  // Pick a child-friendly voice if available
+  var voices = window.speechSynthesis.getVoices();
+  var preferred = voices.find(function(v) {
+    return v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Samantha'));
+  }) || voices.find(function(v){ return v.lang.startsWith('en'); });
+  if (preferred) currentUtterance.voice = preferred;
+
+  window.speechSynthesis.speak(currentUtterance);
+}
+
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  var btn = document.getElementById('voice-btn-text');
+  btn.textContent = voiceEnabled ? 'Voice ON' : 'Voice OFF';
+  if (!voiceEnabled) {
+    window.speechSynthesis.cancel();
+    document.getElementById('voice-indicator').classList.remove('show');
+  } else {
+    speak('Voice is on! Click anything to hear it!');
+  }
+}
+
+// Make ANY clickable element speak when clicked
+document.addEventListener('click', function(e) {
+  if (!voiceEnabled) return;
+  var el = e.target;
+  // Walk up to find meaningful text
+  var targets = [el, el.parentElement, el.parentElement && el.parentElement.parentElement];
+  for (var i = 0; i < targets.length; i++) {
+    var t = targets[i];
+    if (!t) continue;
+    // Skip buttons that already handle their own speech, nav items, voice indicator itself
+    if (t.id === 'voice-indicator' || t.closest('#voice-indicator')) return;
+    if (t.closest('.voice-toggle-btn') || t.id === 'hamburger') return;
+  }
+}, true);
+
+// Load voices (Chrome needs this)
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = function() {
+    window.speechSynthesis.getVoices();
+  };
+}
+
+// ============================================================
+// DATA
+// ============================================================
+
+var ALPHABET = [
+  {l:'A',e:'🍎',w:'Apple',   s:'A is for Apple, red and sweet!'},
+  {l:'B',e:'🐝',w:'Bee',     s:'B is for Bee, buzz buzz buzz!'},
+  {l:'C',e:'🐱',w:'Cat',     s:'C is for Cat, meow meow!'},
+  {l:'D',e:'🐶',w:'Dog',     s:'D is for Dog, man\'s best friend!'},
+  {l:'E',e:'🐘',w:'Elephant',s:'E is for Elephant, big and kind!'},
+  {l:'F',e:'🐟',w:'Fish',    s:'F is for Fish, swimming in the sea!'},
+  {l:'G',e:'🦒',w:'Giraffe', s:'G is for Giraffe, so tall!'},
+  {l:'H',e:'🐴',w:'Horse',   s:'H is for Horse, gallop gallop!'},
+  {l:'I',e:'🍦',w:'Ice cream',s:'I is for Ice cream, yummy!'},
+  {l:'J',e:'🦁',w:'Jaguar',  s:'J is for Jaguar, fast and fierce!'},
+  {l:'K',e:'🦘',w:'Kangaroo',s:'K is for Kangaroo, jump jump!'},
+  {l:'L',e:'🦁',w:'Lion',    s:'L is for Lion, the king!'},
+  {l:'M',e:'🌙',w:'Moon',    s:'M is for Moon, shining bright!'},
+  {l:'N',e:'🌸',w:'Nature',  s:'N is for Nature, beautiful!'},
+  {l:'O',e:'🦉',w:'Owl',     s:'O is for Owl, hoo hoo!'},
+  {l:'P',e:'🐼',w:'Panda',   s:'P is for Panda, black and white!'},
+  {l:'Q',e:'👸',w:'Queen',   s:'Q is for Queen, wearing a crown!'},
+  {l:'R',e:'🌈',w:'Rainbow', s:'R is for Rainbow, so colorful!'},
+  {l:'S',e:'⭐',w:'Star',    s:'S is for Star, shining bright!'},
+  {l:'T',e:'🐯',w:'Tiger',   s:'T is for Tiger, roar!'},
+  {l:'U',e:'☂️',w:'Umbrella',s:'U is for Umbrella, rain rain go away!'},
+  {l:'V',e:'🌺',w:'Violet',  s:'V is for Violet, a pretty flower!'},
+  {l:'W',e:'🐳',w:'Whale',   s:'W is for Whale, the biggest animal!'},
+  {l:'X',e:'🎻',w:'Xylophone',s:'X is for Xylophone, music!'},
+  {l:'Y',e:'🧶',w:'Yarn',    s:'Y is for Yarn, soft and cozy!'},
+  {l:'Z',e:'🦓',w:'Zebra',   s:'Z is for Zebra, black and white stripes!'}
+];
+
+var DAYS = [
+  {n:1,name:'Monday',   emoji:'🌅',fact:'Start of the school week!',   color:'linear-gradient(135deg,#FF6B9D,#FF8E53)'},
+  {n:2,name:'Tuesday',  emoji:'📚',fact:'A great day to read books!',  color:'linear-gradient(135deg,#4FC3F7,#1976D2)'},
+  {n:3,name:'Wednesday',emoji:'🌿',fact:'Middle of the week — keep going!',color:'linear-gradient(135deg,#69F0AE,#00897B)'},
+  {n:4,name:'Thursday', emoji:'⭐',fact:'Almost the weekend!',         color:'linear-gradient(135deg,#FFD93D,#F57C00)'},
+  {n:5,name:'Friday',   emoji:'🎉',fact:'Yay! Fun Friday!',            color:'linear-gradient(135deg,#CE93D8,#7B1FA2)'},
+  {n:6,name:'Saturday', emoji:'🏖️',fact:'Weekend! Play & rest!',      color:'linear-gradient(135deg,#FFAB40,#E65100)'},
+  {n:7,name:'Sunday',   emoji:'☀️',fact:'Family day — rest & recharge!', color:'linear-gradient(135deg,#26C6DA,#00838F)'}
+];
+
+var ANIMALS = [
+  {e:'🦁',n:'Lion',     d:'King of the jungle'},
+  {e:'🐘',n:'Elephant', d:'Biggest land animal'},
+  {e:'🐯',n:'Tiger',    d:'Striped wild cat'},
+  {e:'🦒',n:'Giraffe',  d:'Tallest animal'},
+  {e:'🐻',n:'Bear',     d:'Loves honey'},
+  {e:'🐧',n:'Penguin',  d:'Can\'t fly but swims'},
+  {e:'🦓',n:'Zebra',    d:'Has black & white stripes'},
+  {e:'🐬',n:'Dolphin',  d:'Very intelligent'},
+  {e:'🦅',n:'Eagle',    d:'Sharp-eyed hunter'},
+  {e:'🐸',n:'Frog',     d:'Jumps and swims'},
+  {e:'🦋',n:'Butterfly',d:'Beautiful wings'},
+  {e:'🐢',n:'Turtle',   d:'Carries its house!'},
+  {e:'🦊',n:'Fox',      d:'Clever and quick'},
+  {e:'🦜',n:'Parrot',   d:'Can talk like humans!'},
+  {e:'🐠',n:'Fish',     d:'Lives in water'},
+  {e:'🐄',n:'Cow',      d:'Gives us milk'}
+];
+
+var VEGS = [
+  {e:'🥦',n:'Broccoli',  d:'Like mini trees!'},
+  {e:'🥕',n:'Carrot',    d:'Orange and crunchy'},
+  {e:'🍅',n:'Tomato',    d:'Red and juicy'},
+  {e:'🌽',n:'Corn',      d:'Yellow and sweet'},
+  {e:'🥔',n:'Potato',    d:'Grows underground'},
+  {e:'🧅',n:'Onion',     d:'Makes eyes water!'},
+  {e:'🧄',n:'Garlic',    d:'Fights germs!'},
+  {e:'🫑',n:'Bell Pepper',d:'Crunchy & colorful'},
+  {e:'🥒',n:'Cucumber',  d:'Cool and green'},
+  {e:'🫛',n:'Peas',      d:'Tiny green gems'},
+  {e:'🍆',n:'Eggplant',  d:'Purple beauty'},
+  {e:'🥬',n:'Spinach',   d:'Makes you strong!'}
+];
+
+var FRUITS = [
+  {e:'🍎',n:'Apple',     d:'A day keeps doctor away!'},
+  {e:'🍌',n:'Banana',    d:'Monkeys love them!'},
+  {e:'🍊',n:'Orange',    d:'Full of Vitamin C'},
+  {e:'🍇',n:'Grapes',    d:'Tiny and sweet'},
+  {e:'🍓',n:'Strawberry',d:'Heart-shaped!'},
+  {e:'🍉',n:'Watermelon',d:'Summer favourite'},
+  {e:'🥭',n:'Mango',     d:'King of fruits!'},
+  {e:'🍋',n:'Lemon',     d:'Sour and tangy'},
+  {e:'🍑',n:'Peach',     d:'Soft and fuzzy'},
+  {e:'🫐',n:'Blueberry', d:'Tiny blue gems'},
+  {e:'🍍',n:'Pineapple', d:'Prickly outside, sweet inside!'},
+  {e:'🥝',n:'Kiwi',      d:'Brown outside, green inside'}
+];
+
+var MONTHS = [
+  {n:'January',  num:1, e:'❄️', fact:'Coldest month! Build snowmen!',     color:'linear-gradient(135deg,#4FC3F7,#0288D1)'},
+  {n:'February', num:2, e:'💕', fact:'Valentine\'s month! Hearts everywhere!',color:'linear-gradient(135deg,#FF6B9D,#E91E63)'},
+  {n:'March',    num:3, e:'🌸', fact:'Spring begins! Flowers bloom!',     color:'linear-gradient(135deg,#CE93D8,#7B1FA2)'},
+  {n:'April',    num:4, e:'🌧️',fact:'April showers bring May flowers!',  color:'linear-gradient(135deg,#26C6DA,#00838F)'},
+  {n:'May',      num:5, e:'🌺', fact:'Flowers everywhere!',               color:'linear-gradient(135deg,#69F0AE,#00897B)'},
+  {n:'June',     num:6, e:'☀️', fact:'Summer begins! No school!',         color:'linear-gradient(135deg,#FFD93D,#FF8F00)'},
+  {n:'July',     num:7, e:'🎆', fact:'Fun fireworks month!',              color:'linear-gradient(135deg,#FFAB40,#E65100)'},
+  {n:'August',   num:8, e:'🏖️',fact:'Beach time! Splash splash!',        color:'linear-gradient(135deg,#FF8A65,#BF360C)'},
+  {n:'September',num:9, e:'📚', fact:'Back to school! Learn & grow!',    color:'linear-gradient(135deg,#A5D6A7,#388E3C)'},
+  {n:'October',  num:10,e:'🎃', fact:'Halloween! Pumpkins!',             color:'linear-gradient(135deg,#FF7043,#BF360C)'},
+  {n:'November', num:11,e:'🍂', fact:'Autumn leaves fall!',              color:'linear-gradient(135deg,#BCAAA4,#6D4C41)'},
+  {n:'December', num:12,e:'🎄', fact:'Christmas and New Year!',          color:'linear-gradient(135deg,#EF5350,#B71C1C)'}
+];
+
+var SEASONS = [
+  {name:'Spring',emoji:'🌸',months:'Mar–May',fact:'Flowers bloom, birds sing!',color:'linear-gradient(135deg,#81C784,#43A047)'},
+  {name:'Summer',emoji:'☀️',months:'Jun–Aug',fact:'Hot & sunny! Beach time!',  color:'linear-gradient(135deg,#FFD54F,#FF8F00)'},
+  {name:'Autumn',emoji:'🍂',months:'Sep–Nov',fact:'Leaves turn orange & fall!',color:'linear-gradient(135deg,#FF8A65,#E64A19)'},
+  {name:'Winter',emoji:'❄️',months:'Dec–Feb',fact:'Cold, cozy & snowy!',        color:'linear-gradient(135deg,#90CAF9,#1565C0)'}
+];
+
+var BODY_PARTS = [
+  {e:'🧠',n:'Brain',   d:'Thinks for you'},
+  {e:'👁️',n:'Eyes',   d:'For seeing'},
+  {e:'👂',n:'Ears',    d:'For hearing'},
+  {e:'👃',n:'Nose',    d:'For smelling'},
+  {e:'👄',n:'Mouth',   d:'For talking & eating'},
+  {e:'🦷',n:'Teeth',   d:'Brush twice daily!'},
+  {e:'👅',n:'Tongue',  d:'For tasting'},
+  {e:'🫀',n:'Heart',   d:'Pumps blood'},
+  {e:'🫁',n:'Lungs',   d:'For breathing'},
+  {e:'💪',n:'Arms',    d:'Lift and hug!'},
+  {e:'🤚',n:'Hands',   d:'Hold and touch'},
+  {e:'🖐️',n:'Fingers',d:'5 on each hand'},
+  {e:'🦵',n:'Legs',    d:'Walk and run'},
+  {e:'🦶',n:'Feet',    d:'Support your body'},
+  {e:'🦴',n:'Bones',   d:'Your body\'s frame'},
+  {e:'🩸',n:'Blood',   d:'Carries oxygen'},
+  {e:'😁',n:'Cheeks',  d:'Rosy and chubby!'},
+  {e:'👤',n:'Forehead',d:'Top of your face'}
+];
+
+var MATH_OPS = [
+  {
+    title:'Addition', symbol:'+', icon:'➕',
+    concept:'Addition means putting two numbers TOGETHER to get a bigger number!',
+    formula:'Number + Number = Sum',
+    questions:[
+      {q:'2 + 3',a:5},{q:'5 + 4',a:9},{q:'6 + 7',a:13},{q:'8 + 5',a:13},
+      {q:'10 + 6',a:16},{q:'4 + 9',a:13},{q:'7 + 3',a:10},{q:'12 + 8',a:20},
+      {q:'15 + 5',a:20},{q:'9 + 9',a:18},{q:'3 + 8',a:11},{q:'6 + 6',a:12}
+    ]
+  },
+  {
+    title:'Subtraction', symbol:'−', icon:'➖',
+    concept:'Subtraction means TAKING AWAY a number from another to get a smaller number!',
+    formula:'Number − Number = Difference',
+    questions:[
+      {q:'9 − 4',a:5},{q:'10 − 3',a:7},{q:'15 − 6',a:9},{q:'20 − 8',a:12},
+      {q:'7 − 2',a:5},{q:'18 − 9',a:9},{q:'12 − 5',a:7},{q:'16 − 7',a:9},
+      {q:'25 − 10',a:15},{q:'30 − 15',a:15},{q:'11 − 6',a:5},{q:'8 − 3',a:5}
+    ]
+  },
+  {
+    title:'Multiplication', symbol:'×', icon:'✖️',
+    concept:'Multiplication is REPEATED ADDITION! 3×4 means adding 3 four times!',
+    formula:'Number × Number = Product',
+    questions:[
+      {q:'2 × 3',a:6},{q:'4 × 5',a:20},{q:'3 × 7',a:21},{q:'6 × 4',a:24},
+      {q:'5 × 5',a:25},{q:'8 × 3',a:24},{q:'9 × 2',a:18},{q:'7 × 6',a:42},
+      {q:'4 × 4',a:16},{q:'3 × 3',a:9},{q:'6 × 6',a:36},{q:'5 × 8',a:40}
+    ]
+  },
+  {
+    title:'Division', symbol:'÷', icon:'➗',
+    concept:'Division means SHARING equally! 12 cookies shared by 3 friends = 4 each!',
+    formula:'Number ÷ Number = Quotient',
+    questions:[
+      {q:'10 ÷ 2',a:5},{q:'12 ÷ 3',a:4},{q:'20 ÷ 4',a:5},{q:'15 ÷ 5',a:3},
+      {q:'18 ÷ 6',a:3},{q:'24 ÷ 8',a:3},{q:'36 ÷ 9',a:4},{q:'16 ÷ 4',a:4},
+      {q:'30 ÷ 6',a:5},{q:'28 ÷ 7',a:4},{q:'40 ÷ 8',a:5},{q:'45 ÷ 9',a:5}
+    ]
+  }
+];
+
+var SHAPES = [
+  {name:'Circle',    sides:'0 sides',      fact:'Round like the sun!',         svg:'<circle cx="40" cy="40" r="35" fill="#FF6B9D" opacity=".9"/>'},
+  {name:'Square',    sides:'4 equal sides',fact:'All 4 sides are the same!',   svg:'<rect x="8" y="8" width="64" height="64" rx="4" fill="#4FC3F7" opacity=".9"/>'},
+  {name:'Triangle',  sides:'3 sides',      fact:'3 corners, 3 sides!',         svg:'<polygon points="40,5 75,75 5,75" fill="#FFD93D" opacity=".9"/>'},
+  {name:'Rectangle', sides:'4 sides',      fact:'Like a door or book!',        svg:'<rect x="4" y="18" width="72" height="44" rx="4" fill="#69F0AE" opacity=".9"/>'},
+  {name:'Pentagon',  sides:'5 sides',      fact:'Like a house shape!',         svg:'<polygon points="40,4 76,30 62,72 18,72 4,30" fill="#CE93D8" opacity=".9"/>'},
+  {name:'Hexagon',   sides:'6 sides',      fact:'Like a honeycomb cell!',      svg:'<polygon points="40,4 72,22 72,58 40,76 8,58 8,22" fill="#FFAB40" opacity=".9"/>'},
+  {name:'Star',      sides:'5 points',     fact:'Twinkle twinkle!',            svg:'<polygon points="40,4 49,30 76,30 54,48 62,74 40,58 18,74 26,48 4,30 31,30" fill="#FF6B6B" opacity=".9"/>'},
+  {name:'Oval',      sides:'0 sides',      fact:'Stretched circle!',           svg:'<ellipse cx="40" cy="40" rx="38" ry="25" fill="#26C6DA" opacity=".9"/>'},
+  {name:'Diamond',   sides:'4 sides',      fact:'Like a playing card!',        svg:'<polygon points="40,4 76,40 40,76 4,40" fill="#FF6B9D" opacity=".9"/>'}
+];
+
+var COLORS_LIST = [
+  {name:'Red',    hex:'#FF0000',emoji:'🍎',desc:'Like an apple!'},
+  {name:'Blue',   hex:'#2196F3',emoji:'🌊',desc:'Like the ocean!'},
+  {name:'Yellow', hex:'#FFEB3B',emoji:'⭐',desc:'Like the sun!'},
+  {name:'Green',  hex:'#4CAF50',emoji:'🌿',desc:'Like the grass!'},
+  {name:'Orange', hex:'#FF9800',emoji:'🍊',desc:'Like an orange!'},
+  {name:'Purple', hex:'#9C27B0',emoji:'🔮',desc:'Like a plum!'},
+  {name:'Pink',   hex:'#E91E63',emoji:'🌸',desc:'Like a flower!'},
+  {name:'Brown',  hex:'#795548',emoji:'🍫',desc:'Like chocolate!'},
+  {name:'Black',  hex:'#212121',emoji:'🐧',desc:'Dark as night!'},
+  {name:'White',  hex:'#F5F5F5',emoji:'☁️',desc:'Pure and clean!'},
+  {name:'Cyan',   hex:'#00BCD4',emoji:'🧊',desc:'Light blue!'},
+  {name:'Magenta',hex:'#FF00FF',emoji:'💜',desc:'Bright and vivid!'}
+];
+
+var TABLE_COLORS = [
+  'linear-gradient(135deg,#FF6B9D,#E91E63)',
+  'linear-gradient(135deg,#4FC3F7,#0288D1)',
+  'linear-gradient(135deg,#69F0AE,#00897B)',
+  'linear-gradient(135deg,#FFD93D,#F57C00)',
+  'linear-gradient(135deg,#CE93D8,#7B1FA2)'
+];
+
+var COUNT_EMOJIS = ['🎈','⭐','🌸','🍕','🎉','🦋','🌈','🎊','🎁','🍭','🌟','🎀'];
+
+// ============================================================
+// RHYMES DATA
+// ============================================================
+
+var RHYMES = [
+  {
+    id:'twinkle', cat:'classic',
+    title:'Twinkle Twinkle Little Star', emoji:'⭐',
+    color:'linear-gradient(135deg,#667eea,#764ba2)',
+    borderColor:'#667eea',
+    lines:'Twinkle, twinkle, little star,\nHow I wonder what you are!\nUp above the world so high,\nLike a diamond in the sky.\nTwinkle, twinkle, little star,\nHow I wonder what you are!',
+    speak:'Twinkle, twinkle, little star, How I wonder what you are! Up above the world so high, Like a diamond in the sky.',
+    ytLinks:[
+      {label:'Twinkle Twinkle - ChuChu TV', url:'https://www.youtube.com/watch?v=yCjJyiqpAuU'},
+      {label:'Twinkle Twinkle - Super Simple Songs', url:'https://www.youtube.com/watch?v=YnJMFbSY-50'}
+    ]
+  },
+  {
+    id:'baa', cat:'animals',
+    title:'Baa Baa Black Sheep', emoji:'🐑',
+    color:'linear-gradient(135deg,#FF6B9D,#ff8e53)',
+    borderColor:'#FF6B9D',
+    lines:'Baa baa black sheep, have you any wool?\nYes sir, yes sir, three bags full!\nOne for the master, one for the dame,\nAnd one for the little boy\nWho lives down the lane.',
+    speak:'Baa baa black sheep, have you any wool? Yes sir, yes sir, three bags full! One for the master, one for the dame, and one for the little boy who lives down the lane.',
+    ytLinks:[
+      {label:'Baa Baa Black Sheep - ChuChu TV', url:'https://www.youtube.com/watch?v=FMEBFRZMpow'},
+      {label:'Baa Baa Black Sheep - Cocomelon', url:'https://www.youtube.com/watch?v=GvCv0jvVuJc'}
+    ]
+  },
+  {
+    id:'itsy', cat:'animals',
+    title:'Itsy Bitsy Spider', emoji:'🕷️',
+    color:'linear-gradient(135deg,#26C6DA,#0097A7)',
+    borderColor:'#26C6DA',
+    lines:'The itsy bitsy spider\nClimbed up the water spout.\nDown came the rain\nAnd washed the spider out.\nOut came the sunshine\nAnd dried up all the rain,\nAnd the itsy bitsy spider\nClimbed up the spout again!',
+    speak:'The itsy bitsy spider climbed up the water spout. Down came the rain and washed the spider out. Out came the sunshine and dried up all the rain, and the itsy bitsy spider climbed up the spout again!',
+    ytLinks:[
+      {label:'Itsy Bitsy Spider - Super Simple Songs', url:'https://www.youtube.com/watch?v=l4WNrvVjiTw'},
+      {label:'Itsy Bitsy Spider - Cocomelon', url:'https://www.youtube.com/watch?v=zr5oFc99X9k'}
+    ]
+  },
+  {
+    id:'abc', cat:'learning',
+    title:'The ABC Song', emoji:'🔤',
+    color:'linear-gradient(135deg,#69F0AE,#00897B)',
+    borderColor:'#69F0AE',
+    lines:'A B C D E F G,\nH I J K L M N O P,\nQ R S, T U V,\nW X, Y and Z.\nNow I know my ABCs,\nNext time won\'t you sing with me!',
+    speak:'A, B, C, D, E, F, G! H, I, J, K, L, M, N, O, P! Q, R, S, T, U, V! W, X, Y and Z! Now I know my ABCs, next time won\'t you sing with me!',
+    ytLinks:[
+      {label:'ABC Song - ChuChu TV', url:'https://www.youtube.com/watch?v=aFSR3F5QCRY'},
+      {label:'ABC Song - Super Simple Songs', url:'https://www.youtube.com/watch?v=75p-N9YKqNo'}
+    ]
+  },
+  {
+    id:'humpty', cat:'classic',
+    title:'Humpty Dumpty', emoji:'🥚',
+    color:'linear-gradient(135deg,#FFD93D,#F57C00)',
+    borderColor:'#FFD93D',
+    lines:'Humpty Dumpty sat on a wall,\nHumpty Dumpty had a great fall.\nAll the king\'s horses\nAnd all the king\'s men\nCouldn\'t put Humpty\nTogether again!',
+    speak:'Humpty Dumpty sat on a wall. Humpty Dumpty had a great fall. All the king\'s horses and all the king\'s men couldn\'t put Humpty together again!',
+    ytLinks:[
+      {label:'Humpty Dumpty - ChuChu TV', url:'https://www.youtube.com/watch?v=PSSf-W9eaO8'},
+      {label:'Humpty Dumpty - Little Baby Bum', url:'https://www.youtube.com/watch?v=I4pJy_-lnJk'}
+    ]
+  },
+  {
+    id:'jackjill', cat:'classic',
+    title:'Jack and Jill', emoji:'🪣',
+    color:'linear-gradient(135deg,#CE93D8,#7B1FA2)',
+    borderColor:'#CE93D8',
+    lines:'Jack and Jill went up the hill\nTo fetch a pail of water.\nJack fell down and broke his crown,\nAnd Jill came tumbling after!',
+    speak:'Jack and Jill went up the hill to fetch a pail of water. Jack fell down and broke his crown, and Jill came tumbling after!',
+    ytLinks:[
+      {label:'Jack and Jill - ChuChu TV', url:'https://www.youtube.com/watch?v=jUMRKg7OCGA'},
+      {label:'Jack and Jill - Little Baby Bum', url:'https://www.youtube.com/watch?v=JolxApHtaBY'}
+    ]
+  },
+  {
+    id:'wheels', cat:'learning',
+    title:'Wheels on the Bus', emoji:'🚌',
+    color:'linear-gradient(135deg,#FFAB40,#E65100)',
+    borderColor:'#FFAB40',
+    lines:'The wheels on the bus go round and round,\nRound and round, round and round.\nThe wheels on the bus go round and round,\nAll through the town!\nThe horn on the bus goes beep beep beep...\nThe wipers on the bus go swish swish swish...',
+    speak:'The wheels on the bus go round and round, round and round, round and round. The wheels on the bus go round and round, all through the town!',
+    ytLinks:[
+      {label:'Wheels on the Bus - ChuChu TV', url:'https://www.youtube.com/watch?v=e_04ZrNroTo'},
+      {label:'Wheels on the Bus - Cocomelon', url:'https://www.youtube.com/watch?v=vPdktZb3wvA'}
+    ]
+  },
+  {
+    id:'mary', cat:'classic',
+    title:'Mary Had a Little Lamb', emoji:'🐑',
+    color:'linear-gradient(135deg,#80DEEA,#00838F)',
+    borderColor:'#80DEEA',
+    lines:'Mary had a little lamb,\nLittle lamb, little lamb.\nMary had a little lamb,\nIts fleece was white as snow.\nAnd everywhere that Mary went,\nThe lamb was sure to go!',
+    speak:'Mary had a little lamb, little lamb, little lamb. Mary had a little lamb, its fleece was white as snow. And everywhere that Mary went, the lamb was sure to go!',
+    ytLinks:[
+      {label:'Mary Had a Little Lamb - Super Simple', url:'https://www.youtube.com/watch?v=gR1fKkJPDjo'},
+      {label:'Mary Had a Little Lamb - Cocomelon', url:'https://www.youtube.com/watch?v=v3UYAP-kRJk'}
+    ]
+  },
+  {
+    id:'goodnight', cat:'bedtime',
+    title:'Good Night Song', emoji:'🌙',
+    color:'linear-gradient(135deg,#283593,#1A0533)',
+    borderColor:'#5C6BC0',
+    lines:'Good night, sleep tight,\nDon\'t let the bedbugs bite.\nClose your eyes and rest your head,\nDream of sweet things in your bed.\nThe moon is shining, stars are bright,\nGood night, good night, good night!',
+    speak:'Good night, sleep tight, don\'t let the bedbugs bite. Close your eyes and rest your head, dream of sweet things in your bed.',
+    ytLinks:[
+      {label:'Good Night Song - Super Simple Songs', url:'https://www.youtube.com/watch?v=4UkD6-uJkss'},
+      {label:'Lullaby - Relaxing Kids', url:'https://www.youtube.com/watch?v=Vt91kU3A9xc'}
+    ]
+  },
+  {
+    id:'row', cat:'classic',
+    title:'Row Row Row Your Boat', emoji:'🚣',
+    color:'linear-gradient(135deg,#4FC3F7,#0277BD)',
+    borderColor:'#4FC3F7',
+    lines:'Row, row, row your boat,\nGently down the stream.\nMerrily, merrily, merrily, merrily,\nLife is but a dream!\nRow, row, row your boat,\nGently down the brook.\nIf you catch a little fish,\nThrow it off the hook!',
+    speak:'Row, row, row your boat, gently down the stream. Merrily, merrily, merrily, merrily, life is but a dream!',
+    ytLinks:[
+      {label:'Row Row Row Your Boat - ChuChu TV', url:'https://www.youtube.com/watch?v=nMXy8m6Vu3I'},
+      {label:'Row Your Boat - Little Baby Bum', url:'https://www.youtube.com/watch?v=vXmEj7Ik0pI'}
+    ]
+  },
+  {
+    id:'incy', cat:'animals',
+    title:'Five Little Ducks', emoji:'🦆',
+    color:'linear-gradient(135deg,#A5D6A7,#2E7D32)',
+    borderColor:'#A5D6A7',
+    lines:'Five little ducks went out one day,\nOver the hills and far away.\nMother duck said quack quack quack quack,\nBut only four little ducks came back!\n...\nSad mother duck went out one day,\nOver the hills and far away.\nMother duck said quack quack quack quack,\nAnd all the five little ducks came back!',
+    speak:'Five little ducks went out one day, over the hills and far away. Mother duck said quack quack quack quack, but only four little ducks came back!',
+    ytLinks:[
+      {label:'Five Little Ducks - Super Simple Songs', url:'https://www.youtube.com/watch?v=OSmFGkNlEGc'},
+      {label:'Five Little Ducks - ChuChu TV', url:'https://www.youtube.com/watch?v=VJLr3DPlCLE'}
+    ]
+  },
+  {
+    id:'bedtime2', cat:'bedtime',
+    title:'Twinkle Dreams', emoji:'✨',
+    color:'linear-gradient(135deg,#4A148C,#1A0533)',
+    borderColor:'#9C27B0',
+    lines:'Close your eyes, it\'s time to sleep,\nThe moon will watch, its vigil keep.\nAngels whisper, soft and low,\nAs off to dreamland you now go.\nSleep tight little one, sleep tight,\nWe\'ll see you in the morning light!',
+    speak:'Close your eyes, it\'s time to sleep. The moon will watch, its vigil keep. Angels whisper soft and low, as off to dreamland you now go.',
+    ytLinks:[
+      {label:'Bedtime Lullaby - YouTube Kids', url:'https://www.youtube.com/watch?v=Vt91kU3A9xc'},
+      {label:'Sweet Dreams Song - Super Simple', url:'https://www.youtube.com/watch?v=4UkD6-uJkss'}
+    ]
+  }
+];
+
+// YouTube featured videos
+var YT_VIDEOS = [
+  {
+    emoji:'⭐', title:'Twinkle Twinkle Little Star',
+    desc:'The most loved nursery rhyme for kids!',
+    url:'https://www.youtube.com/watch?v=yCjJyiqpAuU',
+    bg:'linear-gradient(135deg,#667eea,#764ba2)'
+  },
+  {
+    emoji:'🔤', title:'ABC Alphabet Song',
+    desc:'Learn all 26 letters with fun music!',
+    url:'https://www.youtube.com/watch?v=aFSR3F5QCRY',
+    bg:'linear-gradient(135deg,#69F0AE,#00897B)'
+  },
+  {
+    emoji:'🚌', title:'Wheels on the Bus',
+    desc:'Sing along and learn transport words!',
+    url:'https://www.youtube.com/watch?v=e_04ZrNroTo',
+    bg:'linear-gradient(135deg,#FFAB40,#E65100)'
+  },
+  {
+    emoji:'🐑', title:'Baa Baa Black Sheep',
+    desc:'Classic nursery rhyme loved by all!',
+    url:'https://www.youtube.com/watch?v=FMEBFRZMpow',
+    bg:'linear-gradient(135deg,#FF6B9D,#ff8e53)'
+  },
+  {
+    emoji:'🐛', title:'Itsy Bitsy Spider',
+    desc:'Fun action rhyme for tiny hands!',
+    url:'https://www.youtube.com/watch?v=l4WNrvVjiTw',
+    bg:'linear-gradient(135deg,#26C6DA,#0097A7)'
+  },
+  {
+    emoji:'🦆', title:'Five Little Ducks',
+    desc:'Count down with cute little ducks!',
+    url:'https://www.youtube.com/watch?v=OSmFGkNlEGc',
+    bg:'linear-gradient(135deg,#A5D6A7,#2E7D32)'
+  },
+  {
+    emoji:'🌙', title:'Johny Johny Yes Papa',
+    desc:'Adorable rhyme about a naughty kid!',
+    url:'https://www.youtube.com/watch?v=bZFiRuoYFhA',
+    bg:'linear-gradient(135deg,#CE93D8,#7B1FA2)'
+  },
+  {
+    emoji:'🎶', title:'Old MacDonald Had a Farm',
+    desc:'Learn farm animals and their sounds!',
+    url:'https://www.youtube.com/watch?v=5aoBFBfmFps',
+    bg:'linear-gradient(135deg,#FFD93D,#F57C00)'
+  }
+];
+
+// ============================================================
+// BUILD FUNCTIONS
+// ============================================================
+
+function buildAlphabet() {
+  var html = '';
+  ALPHABET.forEach(function(item) {
+    html += '<div class="alpha-card" onclick="openLetter(\'' + item.l + '\')">' +
+      '<div class="big-letter">' + item.l + '</div>' +
+      '<div class="small-letter">' + item.l.toLowerCase() + '</div>' +
+      '<div class="alpha-emoji">' + item.e + '</div>' +
+      '<div class="alpha-word">' + item.w + '</div>' +
+    '</div>';
+  });
+  $('#alpha-grid').html(html);
+}
+
+function buildDays() {
+  var html = '';
+  DAYS.forEach(function(d) {
+    html += '<div class="day-card" style="background:' + d.color + '" onclick="speak(\'' + d.name + '. ' + d.fact + '\')">' +
+      '<span class="day-num">Day ' + d.n + '</span>' +
+      '<div class="day-emoji">' + d.emoji + '</div>' +
+      '<h3>' + d.name + '</h3>' +
+      '<p>' + d.fact + '</p>' +
+    '</div>';
+  });
+  $('#days-grid').html(html);
+}
+
+function buildItemGrid(items, selector) {
+  var html = '';
+  items.forEach(function(item) {
+    html += '<div class="item-card" onclick="speak(\'' + item.n + '. ' + item.d + '\')">' +
+      '<div class="em">' + item.e + '</div>' +
+      '<span>' + item.n + '</span>' +
+      '<small>' + item.d + '</small>' +
+    '</div>';
+  });
+  $(selector).html(html);
+}
+
+function buildMonths() {
+  var html = '';
+  MONTHS.forEach(function(m) {
+    html += '<div class="month-card" style="background:' + m.color + '" onclick="speak(\'' + m.n + '. ' + m.fact + '\')">' +
+      '<div class="m-num">Month ' + m.num + '</div>' +
+      '<div class="m-emoji">' + m.e + '</div>' +
+      '<h3>' + m.n + '</h3>' +
+      '<p>' + m.fact + '</p>' +
+    '</div>';
+  });
+  $('#months-grid').html(html);
+
+  var shtml = '';
+  SEASONS.forEach(function(s) {
+    shtml += '<div class="season-card" style="background:' + s.color + '" onclick="speak(\'' + s.name + '. ' + s.fact + '\')">' +
+      '<div class="s-emoji">' + s.emoji + '</div>' +
+      '<h3>' + s.name + '</h3>' +
+      '<p><strong>' + s.months + '</strong></p>' +
+      '<p style="margin-top:6px">' + s.fact + '</p>' +
+    '</div>';
+  });
+  $('#seasons-strip').html(shtml);
+}
+
+function buildBodyParts() {
+  var html = '';
+  BODY_PARTS.forEach(function(b) {
+    html += '<div class="bp-card" onclick="speak(\'' + b.n + '. ' + b.d + '\')">' +
+      '<div class="bp-emoji">' + b.e + '</div>' +
+      '<span>' + b.n + '</span>' +
+      '<small>' + b.d + '</small>' +
+    '</div>';
+  });
+  $('#bodyparts-grid').html(html);
+}
+
+function buildCounting() {
+  var html = '';
+  for (var i = 1; i <= 100; i++) {
+    var emoji = COUNT_EMOJIS[i % COUNT_EMOJIS.length];
+    html += '<div class="count-num" data-n="' + i + '" onclick="numClick(this,' + i + ')">' +
+      '<span class="emoji-pop">' + emoji + '</span>' +
+      i +
+    '</div>';
+  }
+  $('#count-grid').html(html);
+}
+
+function numClick(el, n) {
+  speak('' + n);
+  var colors = ['#FF6B9D','#4FC3F7','#69F0AE','#FFD93D','#CE93D8','#FFAB40'];
+  var c = colors[n % colors.length];
+  $(el).css({'background':c,'color':'#fff'});
+  launchConfetti(3);
+}
+
+function buildMath() {
+  var html = '';
+  MATH_OPS.forEach(function(op) {
+    html += '<div class="math-section">';
+    html += '<div class="math-header"><span class="op-icon">' + op.icon + '</span><h2>' + op.title + '</h2></div>';
+    html += '<div class="math-concept"><p>' + op.concept + '</p><span class="formula">' + op.formula + '</span></div>';
+    html += '<div class="questions-grid">';
+    op.questions.forEach(function(q) {
+      html += '<div class="q-card" onclick="speak(\'' + q.q + ' equals ' + q.a + '\')">' +
+        '<div class="question">' + q.q + ' = ?</div>' +
+        '<div class="answer">✅ ' + q.a + '</div>' +
+        '<small>Hover to see answer!</small>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  });
+  $('#math-sections').html(html);
+}
+
+function buildShapes() {
+  var html = '';
+  SHAPES.forEach(function(s) {
+    html += '<div class="shape-card" onclick="speak(\'' + s.name + '. ' + s.fact + ' ' + s.sides + '\')">' +
+      '<svg class="shape-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">' + s.svg + '</svg>' +
+      '<h3>' + s.name + '</h3>' +
+      '<p>' + s.fact + '</p>' +
+      '<span class="sides-badge">' + s.sides + '</span>' +
+    '</div>';
+  });
+  $('#shapes-grid').html(html);
+}
+
+function buildColors() {
+  var html = '';
+  COLORS_LIST.forEach(function(c) {
+    html += '<div class="color-card" onclick="speak(\'' + c.name + '. ' + c.desc + '\')">' +
+      '<div class="color-swatch" style="background:' + c.hex + ';display:flex;align-items:center;justify-content:center;font-size:2.4rem">' + c.emoji + '</div>' +
+      '<div class="color-info">' +
+        '<h3>' + c.name + '</h3>' +
+        '<small>' + c.desc + '</small>' +
+        '<div style="font-size:.72rem;color:#bbb;margin-top:3px">' + c.hex + '</div>' +
+      '</div>' +
+    '</div>';
+  });
+  $('#colors-grid').html(html);
+}
+
+function buildTables() {
+  var html = '';
+  for (var t = 1; t <= 5; t++) {
+    html += '<div class="table-card">';
+    html += '<div class="table-header" style="background:' + TABLE_COLORS[t-1] + '">× ' + t + ' Table</div>';
+    for (var i = 1; i <= 12; i++) {
+      var result = t * i;
+      html += '<div class="table-row" onclick="speak(\'' + t + ' times ' + i + ' equals ' + result + '\')">' +
+        '<span class="expr">' + t + ' × ' + i + '</span>' +
+        '<span class="eq">=</span>' +
+        '<span class="result" style="color:' + (i%2===0?'var(--pink)':'var(--blue)') + '">' + result + '</span>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+  $('#tables-grid').html(html);
+
+  var shtml = '';
+  for (var n = 1; n <= 10; n++) {
+    var sq = Math.round(Math.sqrt(n) * 100) / 100;
+    var isPerfect = (Math.round(sq) === sq);
+    shtml += '<div class="sqrt-card" style="' + (isPerfect ? 'background:linear-gradient(135deg,var(--green),var(--teal));' : '') + '" onclick="speak(\'Square root of ' + n + ' equals ' + sq + '\')">' +
+      '<div class="sq-num">√' + n + '</div>' +
+      '<small>' + (isPerfect ? '✅ Perfect!' : 'decimal') + '</small>' +
+      '<div class="result-sq">= ' + sq + '</div>' +
+    '</div>';
+  }
+  $('#sqrt-grid').html(shtml);
+}
+
+function buildRhymes(filter) {
+  var list = filter === 'all' ? RHYMES : RHYMES.filter(function(r){ return r.cat === filter; });
+  var html = '';
+  list.forEach(function(r) {
+    var ytHtml = '';
+    r.ytLinks.forEach(function(yt) {
+      ytHtml += '<a class="yt-link" href="' + yt.url + '" target="_blank" rel="noopener" onclick="speak(\'Opening ' + r.title + ' on YouTube!\')">' +
+        '<span class="yt-icon">▶️</span>' + yt.label +
+      '</a>';
+    });
+
+    html += '<div class="rhyme-card">' +
+      '<div class="rhyme-header" style="background:' + r.color + '">' +
+        '<span class="rh-emoji">' + r.emoji + '</span>' +
+        '<div><h3>' + r.title + '</h3><small>🎵 Click to hear • ' + r.cat.charAt(0).toUpperCase() + r.cat.slice(1) + '</small></div>' +
+      '</div>' +
+      '<div class="rhyme-body">' +
+        '<div class="rhyme-lines" style="border-color:' + r.borderColor + '">' + r.lines + '</div>' +
+        '<button class="rhyme-play-btn" onclick="speak(\'' + r.speak.replace(/'/g,"\\'") + '\')">🔊 Read Aloud</button>' +
+        '<div class="youtube-links"><p>📺 Watch on YouTube:</p>' + ytHtml + '</div>' +
+      '</div>' +
+    '</div>';
+  });
+  $('#rhymes-grid').html(html || '<div style="text-align:center;color:#aaa;padding:40px;font-size:1.1rem">No rhymes in this category yet! 🌟</div>');
+}
+
+function buildVideos() {
+  var html = '';
+  YT_VIDEOS.forEach(function(v) {
+    html += '<div class="video-card">' +
+      '<div class="video-thumbnail" style="background:' + v.bg + '">' + v.emoji + '</div>' +
+      '<div class="video-info">' +
+        '<h4>' + v.title + '</h4>' +
+        '<p>' + v.desc + '</p>' +
+        '<a class="video-watch-btn" href="' + v.url + '" target="_blank" rel="noopener" onclick="speak(\'Opening ' + v.title + ' on YouTube!\')">' +
+          '▶ Watch on YouTube' +
+        '</a>' +
+      '</div>' +
+    '</div>';
+  });
+  $('#videos-grid').html(html);
+}
+
+function filterRhymes(cat, btn) {
+  $('.rhyme-filter-btn').removeClass('active');
+  $(btn).addClass('active');
+  buildRhymes(cat);
+  speak(cat === 'all' ? 'Showing all rhymes!' : 'Showing ' + cat + ' rhymes!');
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+
+var PAGE_TITLES = {
+  home:      '🏠 Welcome to KidZone!',
+  alphabet:  '🔤 Alphabet A–Z',
+  rhymes:    '🎵 Fun English Rhymes',
+  days:      '📅 Days of the Week',
+  nature:    '🌿 Animals, Vegetables & Fruits',
+  months:    '🗓️ Months & Seasons',
+  bodyparts: '🧠 Body Parts',
+  counting:  '🔢 Counting 1–100',
+  math:      '➕ Math Operations',
+  shapes:    '🔷 Shapes',
+  colors:    '🎨 Colors',
+  tables:    '📊 Tables & Roots'
+};
+
+var PAGE_SPEAK = {
+  home:      'Welcome to KidZone! Let\'s learn and play!',
+  alphabet:  'Alphabet A to Z! Click any letter!',
+  rhymes:    'Fun English Rhymes! Click to hear them!',
+  days:      'Days of the week! Click any day!',
+  nature:    'Animals, vegetables and fruits! Click any card!',
+  months:    'Months and seasons! Click any month!',
+  bodyparts: 'Body parts! Click any part to hear its name!',
+  counting:  'Counting one to one hundred! Click any number!',
+  math:      'Math fun! Addition, subtraction, multiplication and division!',
+  shapes:    'Shapes! Click any shape to hear about it!',
+  colors:    'Colors of the rainbow! Click any color!',
+  tables:    'Multiplication tables! Click any row to hear it!'
+};
+
+function showPage(id) {
+  $('.page').removeClass('active');
+  $('#page-' + id).addClass('active');
+  $('.nav-item').removeClass('active');
+  $('[data-page="' + id + '"]').addClass('active');
+  $('#topbar-title').text(PAGE_TITLES[id] || 'KidZone');
+  if ($(window).width() <= 768) closeSidebar();
+  window.scrollTo({top:0, behavior:'smooth'});
+  if (PAGE_SPEAK[id]) speak(PAGE_SPEAK[id]);
+}
+
+function toggleSidebar() {
+  $('#sidebar').toggleClass('open');
+  $('#sidebar-overlay').toggleClass('show');
+}
+
+function closeSidebar() {
+  $('#sidebar').removeClass('open');
+  $('#sidebar-overlay').removeClass('show');
+}
+
+// ============================================================
+// LETTER MODAL
+// ============================================================
+
+function openLetter(letter) {
+  var item = ALPHABET.find(function(a){ return a.l === letter; });
+  if (!item) return;
+  $('#modal-letter').text(item.l);
+  $('#modal-emoji').text(item.e);
+  $('#modal-word').text(item.w + ' — ' + item.l.toLowerCase() + item.w.slice(1));
+  $('#modal-sentence').text(item.s);
+  var dots = '';
+  var traceColors = ['#FF6B9D','#FFD93D','#69F0AE','#4FC3F7','#CE93D8','#FFAB40'];
+  for (var i = 0; i < 6; i++) {
+    dots += '<div class="trace-dot" style="background:' + traceColors[i] + ';animation-delay:' + (i*0.2) + 's"></div>';
+  }
+  $('#trace-bar').html(dots);
+  $('#letter-modal').addClass('open');
+  launchConfetti(6);
+  // Speak: letter name + word + sentence
+  speak(letter + '! ' + item.w + '! ' + item.s);
+}
+
+function closeModal() {
+  $('#letter-modal').removeClass('open');
+  window.speechSynthesis.cancel();
+  document.getElementById('voice-indicator').classList.remove('show');
+}
+
+$('#letter-modal').on('click', function(e) {
+  if ($(e.target).is('#letter-modal')) closeModal();
+});
+
+// ============================================================
+// CONFETTI
+// ============================================================
+
+var confettiPieces = [];
+var confettiColors = ['#FF6B9D','#FFD93D','#4FC3F7','#69F0AE','#CE93D8','#FFAB40','#FF6B6B'];
+
+function launchConfetti(count) {
+  var canvas = document.getElementById('confetti-canvas');
+  var W = window.innerWidth, H = window.innerHeight;
+  canvas.width = W; canvas.height = H;
+  for (var i = 0; i < count * 10; i++) {
+    confettiPieces.push({
+      x: Math.random() * W,
+      y: -20,
+      w: Math.random() * 10 + 4,
+      h: Math.random() * 6 + 4,
+      color: confettiColors[Math.floor(Math.random()*confettiColors.length)],
+      vx: (Math.random()-0.5)*3,
+      vy: Math.random()*4+2,
+      angle: Math.random()*360,
+      va: (Math.random()-0.5)*10,
+      life: 1
+    });
+  }
+  animateConfetti();
+}
+
+function animateConfetti() {
+  var canvas = document.getElementById('confetti-canvas');
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  confettiPieces = confettiPieces.filter(function(p){ return p.y < canvas.height + 30; });
+  confettiPieces.forEach(function(p) {
+    p.x += p.vx; p.y += p.vy; p.angle += p.va;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle * Math.PI/180);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    ctx.restore();
+  });
+  if (confettiPieces.length > 0) requestAnimationFrame(animateConfetti);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+$(document).ready(function() {
+  buildAlphabet();
+  buildDays();
+  buildItemGrid(ANIMALS, '#animals-grid');
+  buildItemGrid(VEGS,    '#vegs-grid');
+  buildItemGrid(FRUITS,  '#fruits-grid');
+  buildMonths();
+  buildBodyParts();
+  buildCounting();
+  buildMath();
+  buildShapes();
+  buildColors();
+  buildTables();
+  buildRhymes('all');
+  buildVideos();
+
+  // Welcome confetti and greeting
+  setTimeout(function(){
+    launchConfetti(8);
+    speak('Welcome to KidZone! Click anything to hear it! Have fun learning!');
+  }, 800);
+});
+</script>
+</body>
+</html>
